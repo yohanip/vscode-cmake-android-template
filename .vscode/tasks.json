@@ -1,0 +1,46 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "configure",
+            "type": "shell",
+            "command": "cmake -B build",
+        },
+        {
+            "label": "build-debug",
+            "type": "shell",
+            "command": "cmake --build build --config Debug",
+            "dependsOn": "configure",
+        },
+        {
+            "label": "build-release",
+            "type": "shell",
+            "command": "cmake --build build --config MinSizeRel",
+            "dependsOn": "configure",
+        },
+        {
+            "label": "android-build",
+            "type": "shell",
+            "command": "ninja",
+            "dependsOn": "android-configure",
+            "options": {
+                "cwd": "build-android"
+            }
+        },
+        {
+            "label": "android-configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-B", "build-android",
+                "-G", "Ninja Multi-Config",
+                "-DTARGET_PLATFORM=android",
+                "-DCMAKE_TOOLCHAIN_FILE=${env:ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake",
+                "-DANDROID_ABI=arm64-v8a",
+                "-DANDROID_PLATFORM=android-21",
+            ]
+        },
+    ]
+}

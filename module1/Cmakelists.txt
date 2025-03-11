@@ -1,0 +1,6 @@
+add_library(module1 SHARED module.cpp)
+target_include_directories(module1 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Define MODULE1_EXPORTS when compiling module1
+# This tells Windows to export symbols properly for shared libraries.
+target_compile_definitions(module1 PRIVATE MODULE1_EXPORTS)

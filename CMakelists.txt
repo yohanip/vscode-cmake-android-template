@@ -1,0 +1,64 @@
+cmake_minimum_required(VERSION 3.10)
+set(MY_VAR "Hello")
+message(${MY_VAR}) # Expands to: message(Hello)
+
+project(MyProject)
+
+# Define a platform option (default to native build)
+# to specify -DTARGET_PLATFORM=linux -> cmake -B build-linux -DTARGET_PLATFORM=linux
+if (NOT DEFINED TARGET_PLATFORM)
+    # get os defined
+    if (UNIX)
+        set(TARGET_PLATFORM linux)
+    elseif (WIN32)
+        set(TARGET_PLATFORM win32)
+    else()
+        # do not build
+        message(FATAL_ERROR "Unknown TARGET_PLATFORM, available: windows, linux, android")
+    endif()
+endif()
+
+if (${TARGET_PLATFORM} STREQUAL android)
+    set(CMAKE_SYSTEM_NAME Android)
+    set(CMAKE_SYSTEM_VERSION ${ANDROID_NATIVE_API_LEVEL})
+
+    message(STATUS "Using Android toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+    message(STATUS "Android ABI: ${CMAKE_ANDROID_ARCH_ABI}")
+    message(STATUS "Android Platform: ${ANDROID_PLATFORM}")
+    message(STATUS "CMAKE SYSTEM VERSION: ${CMAKE_SYSTEM_VERSION}")
+    message(STATUS "Android STL TYPE: ${CMAKE_ANDROID_STL_TYPE}")
+    message(STATUS "Position independent code: ${CMAKE_POSITION_INDEPENDENT_CODE}")
+endif()
+
+message(STATUS "Target platform: ${TARGET_PLATFORM}")
+
+# Specify the include directory
+include_directories(include)
+
+# Add the main executable
+add_executable(my_exe src/main.cpp src/math.cpp)
+
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release;MinSizeRel;RelWithDebInfo" CACHE STRING "" FORCE)
+set(CMAKE_DEBUG_POSTFIX Release)
+
+# Link the math library (libm)
+if (TARGET_PLATFORM STREQUAL "linux")
+    target_link_libraries(my_exe m)
+endif()
+
+if (false)
+    find_package(Boost REQUIRED)
+    include_directories(${Boost_INCLUDE_DIRS})
+    target_link_libraries(my_exe Boost::Boost)
+endif()
+
+# using multimodule
+add_subdirectory(module1)
+add_subdirectory(module2)
+
+# let's link them
+target_link_libraries(my_exe PRIVATE module1 module2)
+
+add_custom_command(TARGET my_exe POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:module1> $<TARGET_FILE_DIR:my_exe>
+)
