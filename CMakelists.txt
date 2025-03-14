@@ -39,7 +39,11 @@ include_directories(include)
 add_executable(my_exe src/main.cpp src/math.cpp)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;MinSizeRel;RelWithDebInfo" CACHE STRING "" FORCE)
-set(CMAKE_DEBUG_POSTFIX Release)
+# for those generator which do not support multi configuration
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    # you could specify: cmake --build build --config Debug
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+endif()
 
 # Link the math library (libm)
 if (TARGET_PLATFORM STREQUAL "linux")
